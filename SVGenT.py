@@ -22,7 +22,7 @@ from scipy.stats import norm
 
 ################# ARGPARSER ######################
 
-usage = '''GlenX takes vcf- and bam-files as input and improve the prediction of genotype''' 
+usage = '''SVGenT takes vcf- and bam-files as input and improve the prediction of genotype''' 
 
 parser = argparse.ArgumentParser(description=usage)
 
@@ -59,10 +59,10 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 	subprocess.call ('mkdir ' + ID + '_bam', shell = True)
 	subprocess.call ('mkdir ' + ID + '_fasta', shell = True)
 	subprocess.call ('mkdir ' + ID + '_assembly', shell = True)
-	subprocess.call ('mkdir ' + ID + '_GlenX_out', shell = True)
+	subprocess.call ('mkdir ' + ID + '_SVGenT_out', shell = True)
 	subprocess.call('chmod +x assembly.sh', shell=True)
 
-	file_name = '{}{}{}{}'.format(ID, '_GlenX_out/', ID, '_GlenX.vcf')
+	file_name = '{}{}{}{}'.format(ID, '_SVGenT_out/', ID, '_SVGenT.vcf')
 
 	valid_chrom = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
 
@@ -76,7 +76,7 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 					info_field = True 
 				else: 
 					if info_field == True:
-						info_GlenX = "##INFO=<ID=GlenX,Number=8,Type=Float,Description='contig_length|contig_sequence|de_novo_tool|normalized_breakpoint|read_coverage_(100bp)|average_read_coverage_for_all_regions_above_mappability_threshold_0.5|raw_breakpoint_read_coverage_(100bp)|gc-content(ref)|mappability-score(ref)|genotype2_(using_read-coverage_information)|denovo_tool'"
+						info_GlenX = "##INFO=<ID=SVGenT,Number=9,Type=Float,Description='contig_length|contig_sequence|de_novo_tool|normalized_breakpoint|read_coverage_(100bp)|average_read_coverage_for_all_regions_above_mappability_threshold_0.5|raw_breakpoint_read_coverage_(100bp)|gc-content(ref)|mappability-score(ref)|genotype2_(using_read-coverage_information)|denovo_tool'"
 						f_out.write(info_GlenX + '\n')
 						info_field = False
 				f_out.write(line)		
@@ -170,7 +170,7 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 				ID_counter += 1
 				split_line[0] = chromA
 				split_line[1] = str(sv_info[1]) # start_pos
-				split_line[2] = 'SV_GlenX_{}'.format(str(ID_counter))	
+				split_line[2] = 'SVGenT_{}'.format(str(ID_counter))	
 				split_line[4] = '<{}>'.format(sv_type)
 				split_line[6] = 'PASS'
 				split_line[8] = 'GT'
@@ -178,14 +178,14 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 				GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}'.format('N/A', 'N/A', statistics['r_i_norm'], statistics['r_i'], statistics['m_all_at'], statistics['gc_content'], statistics['map_i'], statistics['genotype2'])
 				sv_len = int(sv_info[1]) - int(sv_info[2])
 				old_info = split_line[7]
-				glen_info = 'END={};SVTYPE={};SVLEN={};GlenX={}'.format(sv_info[2], sv_type, sv_len, GlenX_stats)				
+				glen_info = 'END={};SVTYPE={};SVLEN={};SVGenT={}'.format(sv_info[2], sv_type, sv_len, GlenX_stats)				
 
 			else:	
 				# Manipulate line with new improved SV information
 				ID_counter += 1
 				split_line[0] = str(chromA)
 				split_line[1] = str(sv_info[2]) # Breakpoint for SV
-				split_line[2] = 'SV_GlenX_{}'.format(str(ID_counter))
+				split_line[2] = 'SVGenT_{}'.format(str(ID_counter))
 				split_line[4] = '<{}>'.format(sv_type)
 				split_line[6] = 'PASS'
 				split_line[8] = 'GT'
@@ -201,13 +201,13 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 				old_info = split_line[7]
 
 				if sv_type == 'BND':
-				 	glen_info = 'SVTYPE=BND;GlenX={}'.format(GlenX_stats) #;CHRA=' + chromA  + ';CHRB=split_line[7] = 'SVTYPE=BND' #;CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] ' + chromB + ';END=' + sv_info[7] # mating breakpoint 
+				 	glen_info = 'SVTYPE=BND;SVGenT={}'.format(GlenX_stats) #;CHRA=' + chromA  + ';CHRB=split_line[7] = 'SVTYPE=BND' #;CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] ' + chromB + ';END=' + sv_info[7] # mating breakpoint 
 					split_line[4] = 'N[{}:{}[' .format(chromB, sv_info[6])
 				elif sv_type != 'BND':
 					if sv_type == "DEL":
-						glen_info = 'END={};SVTYPE={};SVLEN={};GlenX={}'.format(sv_info[6], sv_type, sv_len, GlenX_stats) #'SVTYPE=' + sv_type + ';CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] 
+						glen_info = 'END={};SVTYPE={};SVLEN={};SVGenT={}'.format(sv_info[6], sv_type, sv_len, GlenX_stats) #'SVTYPE=' + sv_type + ';CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] 
 					if sv_type == "DUP" or sv_type == "INV":
-						glen_info = 'SVTYPE={};END={};GlenX={}'.format(sv_type, sv_info[6], GlenX_stats)
+						glen_info = 'SVTYPE={};END={};SVGenT={}'.format(sv_type, sv_info[6], GlenX_stats)
 
 			info = create_info(old_info, glen_info)		
 			split_line[7] = info
@@ -221,10 +221,10 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 
 
 #======================================================================================================
-# START GLENX
+# START SVGenT
 #======================================================================================================
 
-print 'Starts GlenX..'
+print 'Starts SVGenT..'
 db = read_cov_db(ID, tab)
 print 'The database: ', db, 'is completed'	
 assembly = region_specific_assembly (vcf, bam, ID, db, bwa_ref)

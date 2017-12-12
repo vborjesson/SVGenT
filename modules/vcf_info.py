@@ -33,7 +33,7 @@ def create_info (old_info, glen_info):
 
 	# Add new info
 	for key, value in glen_dict.iteritems():
-		# If new info have been found using GlenX; this will be prioritised! Save old info to own tag.		
+		# If new info have been found using SVGenT; this will be prioritised! Save old info to own tag.		
 		info_tag = '{}={}'.format(key, value)
 		new_info_list.append(info_tag)
 

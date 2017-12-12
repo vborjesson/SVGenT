@@ -179,7 +179,7 @@ def call_genotype (sam, chromA, chromB, posA_start, posA_end, posB_start, posB_e
 		if genotype1 == "":
 			genotype1 = "1/1"
 
-		# Get statistics from GlenX.db and read_cov.db
+		# Get statistics from SVGenT.db and read_cov.db
 		statistics = get_stats(db, best_breakpoint[1], best_breakpoint[2])
 
 		# If there is no information about read coverage, skipp this variant

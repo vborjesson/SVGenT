@@ -6,16 +6,16 @@ import sqlite3
 import numpy as np
 
 #======================================================================================================================================
-# GLENX.db
+# SVGenT.db
 # Version: 0.0.0 
 # Author: Vanja Borjesson 
 #
-# CREATE GLENX DATABASE 
-# GlenX database contains information about GC-content and mappability-score per 100 bp in the human genome.
-# GlenX_DB.py takes two files as input; a bigGraph file generated from UCSCs BigWig-file and 
-# the human reference genome (hg19). The mappability-score and gc-content for every 100:th bp is stored in a SQL database; GlenX.db
+# CREATE SVGenT DATABASE 
+# SVGenT database contains information about GC-content and mappability-score per 100 bp in the human genome.
+# SVGenT_DB.py takes two files as input; a bigGraph file generated from UCSCs BigWig-file and 
+# the human reference genome (hg19). The mappability-score and gc-content for every 100:th bp is stored in a SQL database; SVGenT.db
 # 
-# For more information: Visit https://github.com/vborjesson/GlenX.git
+# For more information: Visit https://github.com/vborjesson/SVGenT.git
 #======================================================================================================================================    
 
 usage = '''This tool takes the human reference genome and a bedGraph-file with mappability scores (see http://rohsdb.cmb.usc.edu/GBshape/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability for 100 bp mappability in BigWig format, convert to bedGraph-format) as input and generates a csv file with gc-content and mappability score for every 100 bp''' 
@@ -72,7 +72,7 @@ def create_db (hg19, bedGraph):
 			seq_dict[ID] = seq_string		
 
 	# Create a new database	- GlenX.db	
-	db = sqlite3.connect('GlenX.db')
+	db = sqlite3.connect('SVGenT.db')
 	cursorObject = db.cursor()
 	cursorObject.execute('''CREATE TABLE GlenX (chrom TEXT NOT NULL, start_pos INT NOT NULL, end_pos INT, GC_content REAL, mappability_score REAL, PRIMARY KEY(chrom, start_pos));''')
 	db.commit()
@@ -153,6 +153,6 @@ def create_db (hg19, bedGraph):
 		cursorObject.execute('''CREATE INDEX GC ON GlenX (GC_content)''')
 		db.commit()
 		db.close()
-		print 'GlenX database completed'
+		print 'SVGenT database completed'
 
 array = create_db(args.hg19, args.bedGraph)
