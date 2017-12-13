@@ -70,7 +70,6 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 		print 'Reading VCF for region-specific assembly'
 		ID_counter = 0 # all SVs will have I uniqe number
 		info_field = False
-		for line in vcf_in:
 			if line.startswith("##"):
 				if line.startswith("##INFO"):
 					info_field = True 

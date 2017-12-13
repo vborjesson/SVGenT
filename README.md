@@ -20,7 +20,7 @@ consensus (https://github.com/J35P312/SplitVision)
 
 ## Create database
 requirements; SQLite3
-Statistics are needed to confirm and support the new predicted genotype and SV-type, therefor GlenX requires GlenX.db with GC-content and mappability information. Download mappability scores for reference genome hg19 from rohsdb.cmb.usc.edu/GBshape/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability and convert the bigwig file to readable bedGraph. Do also download the hg19 reference genome. 
+Statistics are needed to confirm and support the new predicted genotype and SV-type, therefor SVGenT requires SVGenT.db with GC-content and mappability information. Download mappability scores for reference genome hg19 from rohsdb.cmb.usc.edu/GBshape/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability and convert the bigwig file to readable bedGraph. Do also download the hg19 reference genome. 
 
 ```
 python SVGenT_DB.py --hg19 /path/to/refgenome --bed /path/to/bedGraph

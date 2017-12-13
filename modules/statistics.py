@@ -16,8 +16,8 @@ def get_stats(db, ch, pos):
 	statistics = {}
 	# Connect the two databases
 	db1 = sqlite3.connect(db)
-	db2 = sqlite3.connect('GlenX.db')
-	db1.execute('''ATTACH DATABASE 'GlenX.db' as db2''')
+	db2 = sqlite3.connect('SVGenT.db')
+	db1.execute('''ATTACH DATABASE 'SVGenT.db' as db2''')
 	cursor = db1.cursor()
 
 	print ch, pos
