@@ -70,7 +70,8 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 		print 'Reading VCF for region-specific assembly'
 		ID_counter = 0 # all SVs will have I uniqe number
 		info_field = False
-			if line.startswith("##"):
+		for line in vcf_in:
+			if line.startswith("#"):
 				if line.startswith("##INFO"):
 					info_field = True 
 				else: 
@@ -146,9 +147,10 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 					region2 = '{}:{}-{}'.format(str(chromB), str(posB_start), str(posB_end))
 				
 				# median chromosome coverage divided in four, will give us a threshold of minimum read coverage that will be returned
-				cov_med = median_cov (db)
+				#cov_med = median_cov (db)
 				# minimum kmer coverage for de novo assembly
-				min_cov = int(cov_med) / 4
+				#min_cov = int(cov_med) / 4
+				min_cov = 7
 				print 'Minimum coverage accepted: ', min_cov
 				print 'Initiate de novo assembly and mapping contigs back to reference'
 				#print 'region1-2', region, region2
@@ -174,7 +176,7 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 				split_line[6] = 'PASS'
 				split_line[8] = 'GT'
 				split_line[9] = '{}'.format (genotype1)
-				GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}'.format('N/A', 'N/A', statistics['r_i_norm'], statistics['r_i'], statistics['m_all_at'], statistics['gc_content'], statistics['map_i'], statistics['genotype2'])
+				GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}'.format('N/A', 'N/A', 'N/A', statistics['r_i_norm'], statistics['r_i'], statistics['m_all_at'], statistics['gc_content'], statistics['map_i'], statistics['genotype2'])
 				sv_len = int(sv_info[1]) - int(sv_info[2])
 				old_info = split_line[7]
 				glen_info = 'END={};SVTYPE={};SVLEN={};SVGenT={}'.format(sv_info[2], sv_type, sv_len, GlenX_stats)				
