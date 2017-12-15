@@ -21,7 +21,7 @@ import numpy as np
 usage = '''This tool takes the human reference genome and a bedGraph-file with mappability scores (see http://rohsdb.cmb.usc.edu/GBshape/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability for 100 bp mappability in BigWig format, convert to bedGraph-format) as input and generates a csv file with gc-content and mappability score for every 100 bp''' 
 parser = argparse.ArgumentParser(description=usage) 
 parser.add_argument('--hg19', dest='hg19', help = 'Path to reference genome hg 19 directory', required= True)
-parser.add_argument('--bed', dest='bedGraph', help = 'Path to BigWig file from http://rohsdb.cmb.usc.edu/GBshape/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability for 100 bp', required= True)
+parser.add_argument('--bed', dest='bedGraph', help = 'Path to bedGraph-file (converted BigWig file) from http://rohsdb.cmb.usc.edu/GBshape/cgi-bin/hgFileUi?db=hg19&g=wgEncodeMapability for 100 bp', required= True)
 args = parser.parse_args()
 
 def create_db (hg19, bedGraph):
@@ -71,7 +71,7 @@ def create_db (hg19, bedGraph):
 			seq_string = ''.join(seq) # add seq as one string
 			seq_dict[ID] = seq_string		
 
-	# Create a new database	- GlenX.db	
+	# Create a new database	- SVGenT.db	
 	db = sqlite3.connect('SVGenT.db')
 	cursorObject = db.cursor()
 	cursorObject.execute('''CREATE TABLE GlenX (chrom TEXT NOT NULL, start_pos INT NOT NULL, end_pos INT, GC_content REAL, mappability_score REAL, PRIMARY KEY(chrom, start_pos));''')
