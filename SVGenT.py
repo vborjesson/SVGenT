@@ -5,6 +5,7 @@ import os
 import argparse
 import subprocess
 import math
+import time
 import numpy as np
 from numpy import loadtxt, dtype,float32
 import warnings
@@ -64,7 +65,7 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 
 	file_name = '{}{}{}{}'.format(ID, '_SVGenT_out/', ID, '_SVGenT.vcf')
 
-	valid_chrom = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '16', '17', '18', '19', '20', '21', '22', 'X', 'Y']
+	valid_chrom = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '16', '17', '18', '19', '20', '21', '22', 'x', 'y']
 
 	with open (vcf, "r") as vcf_in, open (file_name, 'w') as f_out:
 		print 'Reading VCF for region-specific assembly'
@@ -76,7 +77,7 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 					info_field = True 
 				else: 
 					if info_field == True:
-						info_GlenX = "##INFO=<ID=SVGenT,Number=9,Type=Float,Description='contig_length|contig_sequence|de_novo_tool|normalized_breakpoint|read_coverage_(100bp)|average_read_coverage_for_all_regions_above_mappability_threshold_0.5|raw_breakpoint_read_coverage_(100bp)|gc-content(ref)|mappability-score(ref)|genotype2_(using_read-coverage_information)|denovo_tool'"
+						info_GlenX = "##INFO=<ID=SVGenT,Number=10,Type=Float,Description='contig_length|contig_sequence|de_novo_tool|normalized_RD_breakpoint1|normalized_RD_breakpoint2|normalized_RD_breakpoint3|avg(RD)for_all_regions_above_mappability_threshold_0.5|gc-content|mappability-score|genotype2_(using_read-coverage_information)'"
 						f_out.write(info_GlenX + '\n')
 						info_field = False
 				f_out.write(line)		
@@ -154,8 +155,11 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 				print 'Minimum coverage accepted: ', min_cov
 				print 'Initiate de novo assembly and mapping contigs back to reference'
 				#print 'region1-2', region, region2
+				start = time.time()
 				process = ['./assembly.sh', bam, region, ID, region_ID, str(min_cov), bwa_ref, region2, '>/dev/null']
 				os.system(" ".join(process))
+				ass_time = time.time() - start 
+				subprocess.call('echo '+ str(ass_time) + ' >> time_2.txt', shell = True)
 				sam = '{}/{}_mapped.sam' .format(assembly_map, region_ID)
 
 			print sam, chromA, chromB, posA_start, posA_end, posB_start, posB_end, db	
@@ -164,9 +168,10 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 			# If no breakpoints with good quality could be found inside our region, the old SV wiil be written to our new vcf
 			if sv_type == 'N/A':
 				f_out.write(line.upper()) 
+				print 'Variant not found, old info is copied to vcf-file'
 				continue
 
-			# If SV classification have been done using read_coverage over region
+			# If SV classification have been done using only read_coverage over region
 			if len(sv_info) == 3:
 				ID_counter += 1
 				split_line[0] = chromA
@@ -176,10 +181,10 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 				split_line[6] = 'PASS'
 				split_line[8] = 'GT'
 				split_line[9] = '{}'.format (genotype1)
-				GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}'.format('N/A', 'N/A', 'N/A', statistics['r_i_norm'], statistics['r_i'], statistics['m_all_at'], statistics['gc_content'], statistics['map_i'], statistics['genotype2'])
+				GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format('N/A', 'N/A', 'N/A', statistics['RD_norm_1'], statistics['RD_norm_2'], statistics['RD_norm_3'], statistics['RD_all'], statistics['RD_gc_1'], statistics['map_1'], statistics['genotype2'])
 				sv_len = int(sv_info[1]) - int(sv_info[2])
 				old_info = split_line[7]
-				glen_info = 'END={};SVTYPE={};SVLEN={};SVGenT={}'.format(sv_info[2], sv_type, sv_len, GlenX_stats)				
+				glen_info = 'END={};SVTYPE={};SVLEN={};SVGenT={}'.format(sv_info[2], sv_type, sv_len, GlenX_stats)	
 
 			else:	
 				# Manipulate line with new improved SV information
@@ -197,19 +202,31 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 				de_novo_tool = sv_info[11]
 				sv_len = int(sv_info[2]) - int(sv_info[6])
 
-				# INFO-field: contig length, seq, normalized read ceverage, raw read-coverage, gc-content and mappabilty score
-				GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(contig_l, contig_seq, de_novo_tool, statistics['r_i_norm'], statistics['r_i'], statistics['m_all_at'], statistics['gc_content'], statistics['map_i'], statistics['genotype2']) 
-				old_info = split_line[7]
+				if sv_type == 'tBND':
+					split_line[4] = '<BND>'
+					# INFO-field: contig length, seq, normalized read ceverage, raw read-coverage, gc-content and mappabilty score
+					GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(contig_l, contig_seq, de_novo_tool, 'NA', statistics['RD_norm_2'], statistics['RD_norm_3'], statistics['RD_all'], 'NA', 'NA', statistics['genotype2']) 
+					old_info = split_line[7]					
+					glen_info = 'SVTYPE=BND;SVGenT={}'.format(GlenX_stats) #;CHRA=' + chromA  + ';CHRB=split_line[7] = 'SVTYPE=BND' #;CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] ' + chromB + ';END=' + sv_info[7] # mating breakpoint 
+					split_line[4] = 'N[{}:{}[' .format(chromB, sv_info[6])								
 
-				if sv_type == 'BND':
-				 	glen_info = 'SVTYPE=BND;SVGenT={}'.format(GlenX_stats) #;CHRA=' + chromA  + ';CHRB=split_line[7] = 'SVTYPE=BND' #;CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] ' + chromB + ';END=' + sv_info[7] # mating breakpoint 
-					split_line[4] = 'N[{}:{}[' .format(chromB, sv_info[6])
-				elif sv_type != 'BND':
-					if sv_type == "DEL":
-						glen_info = 'END={};SVTYPE={};SVLEN={};SVGenT={}'.format(sv_info[6], sv_type, sv_len, GlenX_stats) #'SVTYPE=' + sv_type + ';CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] 
-					if sv_type == "DUP" or sv_type == "INV":
-						glen_info = 'SVTYPE={};END={};SVGenT={}'.format(sv_type, sv_info[6], GlenX_stats)
 
+
+				else:	
+					# INFO-field: contig length, seq, normalized read ceverage, raw read-coverage, gc-content and mappabilty score
+					GlenX_stats = '{}|{}|{}|{}|{}|{}|{}|{}|{}|{}'.format(contig_l, contig_seq, de_novo_tool, statistics['RD_norm_1'], statistics['RD_norm_2'], statistics['RD_norm_3'], statistics['RD_all'], statistics['RD_gc_1'], statistics['map_1'], statistics['genotype2']) 
+					old_info = split_line[7]
+
+					if sv_type == 'BND':
+					 	glen_info = 'SVTYPE=BND;SVGenT={}'.format(GlenX_stats) #;CHRA=' + chromA  + ';CHRB=split_line[7] = 'SVTYPE=BND' #;CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] ' + chromB + ';END=' + sv_info[7] # mating breakpoint 
+						split_line[4] = 'N[{}:{}[' .format(chromB, sv_info[6])
+					elif sv_type != 'BND':
+						if sv_type == "DEL":
+							glen_info = 'END={};SVTYPE={};SVLEN={};SVGenT={}'.format(sv_info[6], sv_type, sv_len, GlenX_stats) #'SVTYPE=' + sv_type + ';CHRA=' + chromA  + ';CHRB=' + chromB + ';END=' + sv_info[7] 
+						if sv_type == "DUP" or sv_type == "INV":
+							glen_info = 'SVTYPE={};END={};SVGenT={}'.format(sv_type, sv_info[6], GlenX_stats)
+
+			#Create a info filed in INFO containing old info and new info. 			
 			info = create_info(old_info, glen_info)		
 			split_line[7] = info
 
@@ -225,11 +242,10 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 # START SVGenT
 #======================================================================================================
 
+# Start by creating database containing gc-content, read coverage, mappability and position per 100 base.  
 print 'Starts SVGenT..'
 db = read_cov_db(ID, tab)
 print 'The database: ', db, 'is completed'	
 assembly = region_specific_assembly (vcf, bam, ID, db, bwa_ref)
-#sv_info, genotype, sv_type = genotype_caller (sam, chromA, chromB, posA_start, posA_end, posB_start, posB_end, tab_arr)	
-# Check if SVs are supported in de novo assemby, classify SV type and genotype.  
-# call_genotype = genotype_caller (sam, chromA, chromB, posA_start, posA_end, posB_start, posB_end, tab_arr)
+
 

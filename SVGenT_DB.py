@@ -149,8 +149,8 @@ def create_db (hg19, bedGraph):
 			cursorObject.execute('''UPDATE GlenX set mappability_score = ? WHERE chrom = ? AND start_pos = ? AND end_pos = ?''', (mappability, chrom, start_pos, end_pos))
 
 		# Indexing the database will speed up the searching	
-		cursorObject.execute('''CREATE INDEX COV ON GlenX (chrom, start_pos, end_pos)''')	
-		cursorObject.execute('''CREATE INDEX GC ON GlenX (GC_content)''')
+		cursorObject.execute('''CREATE INDEX COV ON GlenX (chrom, start_pos)''')	
+#		cursorObject.execute('''CREATE INDEX GC ON GlenX (GC_content)''')
 		db.commit()
 		db.close()
 		print 'SVGenT database completed'

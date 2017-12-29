@@ -26,7 +26,16 @@ def read_cov_db (ID, tab_file):
 			cursorObject.execute('''CREATE INDEX REF ON read_cov (chrom, start_pos, end_pos)''')	
 			db1.commit()
 			db1.close()
-	return db_name
+
+			db1 = sqlite3.connect(db_name)
+			c = db1.cursor()
+			c.execute('''ATTACH database 'SVGenT.db' as db2''')
+			c.execute('''ATTACH database ? as db1''', [db_name])
+			c.execute('''create table db1.table1 as select * from db1.read_cov a left join db2.GlenX b on a.chrom=b.chrom and a.start_pos = b.start_pos;''')
+			c.execute('''create index db1.join_idx on table1 (chrom, read_coverage, mappability_score)''')
+			c.execute('''create index db1.join_2_idx on table1 (chrom, GC_content, read_coverage)''')
+			c.execute('''create index db1.join_3_idx on table1 (chrom, start_pos)''')
+		return db_name
 
 #s=====================================================================
 # Calculating and Returning median read coverage for the whole genome
