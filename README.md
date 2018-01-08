@@ -8,14 +8,13 @@ Takes an vcf, bam and tab-file with read depth per 100 bp as input.
 dependencies: 
 
 ```
+SQLite3
 ABySS
 SSAKE
-velvet
 BWA
 samtools
 clustalw
 SVGenT.db (look futher down in this readme)
-consensus (https://github.com/J35P312/SplitVision) 
 ```
 
 ## Create database
@@ -29,9 +28,28 @@ This will create SVGenT.db SQL database in the SVGenT directory, takes about 2 h
 
 ## Run SVGenT
 ```
+python SVGenT.py -h 
+
+usage: SVGenT.py [-h] --vcf VCF_IN --bam BAM_IN --tab TAB_IN [--ID ID]
+                 [--sam SAM] --bwa_ref BWA_REF
+
+SVGenT takes vcf- and bam-files as input and improve the prediction of
+genotype
+
+optional arguments:
+  -h, --help         show this help message and exit
+  --vcf VCF_IN       Path to vcf-file
+  --bam BAM_IN       Path to bam-file
+  --tab TAB_IN       Path to tab_file
+  --ID ID            sample ID
+  --sam SAM          path to sam-file for dry run
+  --bwa_ref BWA_REF  Path to reference genome for bwa mem
+```
+An example:
+```
 python SVGenT.py --vcf --bam --tab --bwa_ref --ID
 ```
-This will generate a vcf file with new predicted breakpoints, genotyping predictions.
+This will generate a vcf file with new predicted breakpoints, genotyping predictions. SVGenT updates ~ 700 SVs/hour, plus 30 min for developing the database. 
 
 
 

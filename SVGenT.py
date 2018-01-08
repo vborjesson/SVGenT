@@ -246,6 +246,8 @@ def region_specific_assembly (vcf, bam, ID, db, bwa_ref):
 print 'Starts SVGenT..'
 db = read_cov_db(ID, tab)
 print 'The database: ', db, 'is completed'	
+
+# Read in the vcf file and perform assemble, statistics and update VCF.
 assembly = region_specific_assembly (vcf, bam, ID, db, bwa_ref)
 
 

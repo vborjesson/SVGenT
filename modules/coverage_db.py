@@ -18,7 +18,10 @@ def read_cov_db (ID, tab_file):
 			db1.commit()	
 			for line in f_in:
 				line = line.split('\t')
-				chrom = '{}{}'.format('chr', line[0])
+				if len(line[0]) > 2:
+					chrom = '{}{}'.format('chr', line[0])
+				else:
+					chrom = line[0]
 				start_pos = line[1]
 				end_pos = line[2]
 				cov = line[3]
